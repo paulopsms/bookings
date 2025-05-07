@@ -1,4 +1,4 @@
-package com.paulopsms.domain.entity;
+package com.paulopsms.domain.model;
 
 public enum BookingStatus {
 

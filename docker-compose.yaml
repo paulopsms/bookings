@@ -5,8 +5,7 @@ services:
     build: .
     container_name: backend
     depends_on:
-      db:
-        condition: service_healthy
+      - flyway
 
     environment:
       - spring.datasource.url=jdbc:postgresql://db:5432/${POSTGRES_DB}
@@ -46,6 +45,17 @@ services:
       start_interval: 5s
     ports:
       - "5432:5432"
+    networks:
+      - springapipostgres-net
+
+  flyway:
+    image: flyway/flyway:11.8.0-alpine
+    command: -url=jdbc:postgresql://db:5432/${POSTGRES_DB} -schemas=public -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} migrate
+    volumes:
+      - ./sql:/flyway/sql
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - springapipostgres-net
 

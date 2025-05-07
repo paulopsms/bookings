@@ -1,4 +1,4 @@
-package com.paulopsms.domain.entity;
+package com.paulopsms.domain.model;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;

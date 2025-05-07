@@ -1,28 +1,34 @@
-package com.paulopsms.domain.entity;
+package com.paulopsms.domain.model;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.paulopsms.exception.DateRangeRuntimeException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 @Getter
-@Entity
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class DateRange implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @Column(name = "startDate")
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate startDate;
 
-    @Column(name = "endDate")
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate endDate;
 
     public DateRange(LocalDate startDate, LocalDate endDate) {
@@ -34,10 +40,11 @@ public class DateRange implements Serializable {
 
     private void validateDates() {
         if (!this.endDate.isAfter(this.startDate)) {
-            throw new RuntimeException("A data de término deve ser posterior à data de início.");
+            throw new DateRangeRuntimeException("A data de término deve ser posterior à data de início.");
         }
     }
 
+    @JsonIgnore
     public Long getTotalNights() {
         return ChronoUnit.DAYS.between(startDate, endDate);
     }

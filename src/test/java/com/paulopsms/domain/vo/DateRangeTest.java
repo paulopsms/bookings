@@ -1,6 +1,6 @@
 package com.paulopsms.domain.vo;
 
-import com.paulopsms.domain.entity.DateRange;
+import com.paulopsms.domain.model.DateRange;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;

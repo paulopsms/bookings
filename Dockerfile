@@ -1,54 +1,41 @@
-# Build stage
+# Build stage - compilar o projeto
 FROM maven:3.8.5-openjdk-17-slim AS build
 
-# Add metadata
-LABEL maintainer="Your Name <your.email@example.com>"
-LABEL description="Spring Boot Application"
-
-# Set working directory early to make commands cleaner
+# Diretório de trabalho para o Maven
 WORKDIR /app
 
-# Leverage Docker cache by copying only files required at each stage
-COPY pom.xml .  # First copy only pom.xml to cache dependencies
-RUN mvn dependency:go-offline --no-transfer-progress  # Reduced cluttered logs
+# Copiar o arquivo pom.xml e baixar as dependências para aproveitar o cache do Docker
+COPY pom.xml .
+RUN mvn dependency:go-offline --no-transfer-progress
 
-# Copy all other files (source code)
+# Copiar o restante dos arquivos do projeto
 COPY src ./src
 
-# Build the application (skip tests to improve build times)
+# Compilar o projeto e criar o arquivo JAR (sem executar os testes para acelerar o build)
 RUN mvn clean package -DskipTests --no-transfer-progress
 
-# Final stage - Slimmed runtime image
-FROM eclipse-temurin:17-jre-slim
 
-# Add metadata
-LABEL description="Spring Boot Application"
+# Runtime stage - executar a aplicação
+# Usar uma imagem JRE leve e otimizada para produção
+FROM openjdk:17.0.1-jdk-slim
 
-# Create a dedicated, unprivileged user for security
-RUN useradd --create-home --shell /bin/bash spring
-
-# Set a non-root working directory
+# Criar um diretório de trabalho para a aplicação
 WORKDIR /app
 
-# Copy the built application JAR file from build stage
-COPY --from=build /app/target/*.jar /app/application.jar
+# Copiar o arquivo JAR gerado na etapa de build
+COPY --from=build /app/target/*.jar application.jar
 
-# Set ownership of the application folder (security)
+# Criar um usuário não root para rodar a aplicação de forma segura
+RUN useradd --create-home --shell /bin/bash spring
 RUN chown -R spring:spring /app
-
-# Switch to non-root user
 USER spring
 
-# Set environment variables with sane defaults
+# Variável de ambiente para opções da JVM (configurações padrão ajustáveis)
 ENV JAVA_OPTS="-Xms512m -Xmx512m"
 ENV SPRING_PROFILES_ACTIVE="default"
 
-# Expose the application port
+# Expor a porta do aplicativo (porta padrão do Spring Boot)
 EXPOSE 8080
 
-# Add health check for Kubernetes / Docker monitoring
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-# Run the application as non-root user
+# Comando de execução da aplicação
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar application.jar"]

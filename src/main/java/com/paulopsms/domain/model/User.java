@@ -1,25 +1,23 @@
-package com.paulopsms.domain.entity;
+package com.paulopsms.domain.model;
 
-import jakarta.persistence.*;
+import com.paulopsms.exception.UserRuntimeException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 
+import static java.util.Objects.isNull;
+
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
-@Entity
-@Table(name = "AppUser")
 public class User implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
-    @Column(name = "name")
     private String name;
 
     public User(Long id, String name) {
@@ -29,6 +27,7 @@ public class User implements Serializable {
     }
 
     private void validaNome() {
-        if (this.name.isBlank()) throw new RuntimeException("O nome do usuário é obrigatório.");
+        if (isNull(this.name) || this.name.isBlank())
+            throw new UserRuntimeException("O nome do usuário é obrigatório.");
     }
 }

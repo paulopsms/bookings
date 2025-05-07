@@ -1,13 +1,15 @@
 package com.paulopsms.service;
 
-import com.paulopsms.domain.entity.Booking;
-import com.paulopsms.domain.entity.Property;
-import com.paulopsms.domain.entity.User;
-import com.paulopsms.domain.entity.DateRange;
+import com.paulopsms.domain.entity.BookingEntity;
+import com.paulopsms.domain.model.*;
 import com.paulopsms.dto.CreateBookingDto;
+import com.paulopsms.exception.CancelBookingRuntimeException;
+import com.paulopsms.mapper.BookingMapper;
+import com.paulopsms.repository.BookingRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.paulopsms.repository.BookingRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,26 +17,27 @@ import java.util.Optional;
 
 import static java.util.Objects.isNull;
 
+@Slf4j
 @Service
 public class BookingService {
 
     @Autowired
-    BookingRepository bookingRepository;
+    private BookingRepository bookingRepository;
 
     @Autowired
-    PropertyService propertyService;
+    private PropertyService propertyService;
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
-//    public BookingService(BookingRepository bookingRepository) {
-//        this.bookingRepository = bookingRepository;
-//    }
+    @Autowired
+    private BookingMapper bookingMapper;
 
-    public Booking findUserById(long bookingId) {
+    public BookingEntity findUserById(long bookingId) {
         return this.bookingRepository.findById(bookingId).get();
     }
 
+    @Transactional
     public Booking createBooking(CreateBookingDto bookingDto) {
         Property property = this.propertyService.findPropertyById(bookingDto.getPropertyId());
 
@@ -44,25 +47,48 @@ public class BookingService {
 
         if (isNull(user)) throw new RuntimeException("Usuário não encontrado.");
 
+        log.info("Creating DateRange");
+
         DateRange dateRange = new DateRange(bookingDto.getStartDate(), bookingDto.getEndDate());
 
-        Booking booking = new Booking(1L, property, user, dateRange, bookingDto.getGuestCount());
+        log.info("Creating Booking");
 
-        this.bookingRepository.save(booking);
+        Booking booking = new Booking(property, user, dateRange, bookingDto.getGuestCount());
+
+        log.info("Mapping Booking to Entity");
+
+        BookingEntity entity = this.bookingMapper.toEntity(booking);
+
+        log.info("Saving BookingEntity {}", entity);
+
+        this.bookingRepository.save(entity);
+
+        log.info("Booking created with id {}", entity.getId());
+
+        booking.getDateRange().setId(entity.getDateRange().getId());
+        booking.setId(entity.getId());
 
         return booking;
     }
 
     public void cancelBooking(Long id) {
-        Optional<Booking> booking = this.bookingRepository.findById(id);
+        Optional<BookingEntity> booking = this.bookingRepository.findBookingByIdAndBookingStatus(id, BookingStatus.CONFIRMED);
 
-        booking.ifPresent(value -> {
-            value.cancel(LocalDate.now());
-            this.bookingRepository.save(value);
+        booking.ifPresentOrElse(value -> {
+            Booking model = bookingMapper.toModel(booking.get());
+            model.cancel(LocalDate.now());
+            BookingEntity entity = bookingMapper.toEntity(model);
+            this.bookingRepository.save(entity);
+        }, () -> {
+            throw new CancelBookingRuntimeException("Reserva não encontrada.");
         });
     }
 
     public List<Booking> listBookings() {
-        return this.bookingRepository.findAll();
+        return this.bookingRepository.findAll().stream().map(this.bookingMapper::toModel).toList();
+    }
+
+    public Booking findBookingById(Long bookingId) {
+        return this.bookingRepository.findById(bookingId).map(this.bookingMapper::toModel).orElse(null);
     }
 }
