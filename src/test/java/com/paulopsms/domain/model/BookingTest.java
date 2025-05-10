@@ -45,38 +45,6 @@ public class BookingTest {
     }
 
     @Test
-    public void givenABooking_whenValidatingGuests_thenShouldThrowAnExceptionIfGuestsLowerThanOrEqualsZero() {
-        Property property = new Property(1L, "Casa", "Descrição", 4, new BigDecimal("100.0"));
-        User user = new User(1L, "Paulo Sérgio");
-        DateRange dateRange = new DateRange(LocalDate.parse("2025-04-20"), LocalDate.parse("2025-04-25"));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            new Booking(1L, property, user, dateRange, 0);
-        });
-
-        String expectedMessage = "O número de hóspedes deve ser maior que zero.";
-        String exceptionMessage = exception.getMessage();
-
-        assertEquals(expectedMessage, exceptionMessage);
-    }
-
-    @Test
-    public void givenABooking_whenValidatingGuests_thenShouldThrowAnExceptionIfGuestsHigherThanMaximumAllowed() {
-        Property property = new Property(1L, "Casa", "Descrição", 4, new BigDecimal("100.0"));
-        User user = new User(1L, "Paulo Sérgio");
-        DateRange dateRange = new DateRange(LocalDate.parse("2025-04-20"), LocalDate.parse("2025-04-25"));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            new Booking(1L, property, user, dateRange, 6);
-        });
-
-        String expectedMessage = "O número máximo de hóspedes permitidos são " + property.getNumberOfGuests() + ".";
-        String exceptionMessage = exception.getMessage();
-
-        assertEquals(expectedMessage, exceptionMessage);
-    }
-
-    @Test
     public void givenABooking_whenCalculatingPrice_thenShouldCalculateDiscount() {
         Property property = new Property(1L, "Casa", "Descrição", 4, new BigDecimal("100.0"));
         User user = new User(1L, "Paulo Sérgio");
@@ -85,25 +53,6 @@ public class BookingTest {
         Booking booking = new Booking(1L, property, user, dateRange, 3);
 
         assertEquals(new BigDecimal("900.00"), booking.getTotalPrice());
-    }
-
-    @Test
-    public void givenTwoOrMoreBookings_whenCalculatingPrice_thenShouldNotCalculateIfIsNotAvailable() {
-        Property property = new Property(1L, "Casa", "Descrição", 4, new BigDecimal("100.0"));
-        User user = new User(1L, "Paulo Sérgio");
-        DateRange dateRange = new DateRange(LocalDate.parse("2025-04-20"), LocalDate.parse("2025-04-25"));
-        Booking booking = new Booking(1L, property, user, dateRange, 2);
-
-        DateRange dateRange2 = new DateRange(LocalDate.parse("2025-04-24"), LocalDate.parse("2025-04-28"));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            new Booking(1L, property, user, dateRange2, 1);
-        });
-
-        String expectedMessage = "A propriedade não está disponível para o período selecionado.";
-        String exceptionMessage = exception.getMessage();
-
-        assertEquals(expectedMessage, exceptionMessage);
     }
 
     @Test

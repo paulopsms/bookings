@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class UserMapperTest {
@@ -18,13 +17,11 @@ public class UserMapperTest {
 
     private User user;
     private UserEntity userEntity;
-    private UserEntity userEntityException;
 
     @BeforeEach
     public void init() {
         user = User.builder().id(1L).name("John Doe").build();
         userEntity = new UserEntity(1L, "John Doe");
-        userEntityException = new UserEntity(1L, "");
     }
 
     @Test
@@ -41,17 +38,5 @@ public class UserMapperTest {
 
         assertEquals(this.userEntity.getId(), userModel.getId());
         assertEquals(this.userEntity.getName(), userModel.getName());
-    }
-
-    @Test
-    public void givenAnEmptyUserModelName_whenConvertToUserEntity_thenShouldThrowAnException() {
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            userMapper.toModel(userEntityException);
-        });
-
-        String expectedMessage = "O nome do usuário é obrigatório.";
-        String message = exception.getMessage();
-
-        assertEquals(expectedMessage, message);
     }
 }

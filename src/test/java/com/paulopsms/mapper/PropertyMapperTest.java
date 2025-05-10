@@ -44,17 +44,4 @@ public class PropertyMapperTest {
         assertEquals(propertyEntity.getId(), userModel.getId());
         assertEquals(propertyEntity.getName(), userModel.getName());
     }
-
-    @Test
-    public void givenAnEmptyPropertyModelName_whenConvertToPropertyEntity_thenShouldThrowAnException() {
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            propertyMapper.toModel(propertyEntityException);
-        });
-
-        String expectedMessage = "O nome da propriedade é obrigatório.";
-        String message = exception.getMessage();
-
-        assertEquals(expectedMessage, message);
-    }
 }

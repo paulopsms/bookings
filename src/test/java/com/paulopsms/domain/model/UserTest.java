@@ -18,16 +18,4 @@ public class UserTest {
         assertEquals(1, user.getId());
         assertEquals("Paulo Sérgio", user.getName());
     }
-
-    @Test
-    public void givenAnEmptyName_whenCreateNewUser_thenShouldThrowAnException() {
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            new User(1L, "");
-        });
-
-        String expectedMessage = "O nome do usuário é obrigatório.";
-        String message = exception.getMessage();
-
-        assertEquals(expectedMessage, message);
-    }
 }

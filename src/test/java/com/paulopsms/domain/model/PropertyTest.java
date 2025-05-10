@@ -24,30 +24,6 @@ public class PropertyTest {
     }
 
     @Test
-    public void givenAnEmptyname_whenCreatingNewProperty_thenShouldThrowAnException() {
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            new Property(1L, "", "Uma bela casa na praia", 0, new BigDecimal("200"));
-        });
-
-        String expectedMessage = "O nome da propriedade é obrigatório.";
-        String message = exception.getMessage();
-
-        assertEquals(expectedMessage, message);
-    }
-
-    @Test
-    public void givenNumberOfGuestsLowerThanOrEqualsZero_whenCreatingNewProperty_thenShouldThrowAnException() {
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            new Property(1L, "Casa de Praia", "Uma bela casa na praia", 0, new BigDecimal("200"));
-        });
-
-        String expectedMessage = "O número de hóspedes deve ser maior que zero.";
-        String message = exception.getMessage();
-
-        assertEquals(expectedMessage, message);
-    }
-
-    @Test
     public void givenNumberOfGuests_whenCreatingNewProperty_thenShouldValidateMaximumNumberOfGuests() {
         Property property = new Property(1L, "Casa de Praia", "Uma bela casa na praia", 4, new BigDecimal("150"));
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {

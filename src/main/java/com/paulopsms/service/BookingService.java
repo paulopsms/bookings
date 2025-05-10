@@ -6,6 +6,9 @@ import com.paulopsms.dto.CreateBookingDto;
 import com.paulopsms.exception.CancelBookingRuntimeException;
 import com.paulopsms.mapper.BookingMapper;
 import com.paulopsms.repository.BookingRepository;
+import com.paulopsms.validation.BookingValidationService;
+import com.paulopsms.validation.DateRangeValidationService;
+import com.paulopsms.validation.PropertyValidationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,15 @@ public class BookingService {
     private UserService userService;
 
     @Autowired
+    private BookingValidationService bookingValidationService;
+
+    @Autowired
+    private DateRangeValidationService dateRangeValidationService;
+
+    @Autowired
+    private PropertyValidationService propertyValidationService;
+
+    @Autowired
     private BookingMapper bookingMapper;
 
     public BookingEntity findUserById(long bookingId) {
@@ -51,9 +63,15 @@ public class BookingService {
 
         DateRange dateRange = new DateRange(bookingDto.getStartDate(), bookingDto.getEndDate());
 
+        this.dateRangeValidationService.validateDateRange(dateRange);
+
+        this.propertyValidationService.validatePropertyAvailability(property, dateRange);
+
         log.info("Creating Booking");
 
         Booking booking = new Booking(property, user, dateRange, bookingDto.getGuestCount());
+
+        this.bookingValidationService.validateBooking(booking);
 
         log.info("Mapping Booking to Entity");
 

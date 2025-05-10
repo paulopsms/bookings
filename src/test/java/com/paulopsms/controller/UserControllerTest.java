@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.paulopsms.domain.model.User;
-import com.paulopsms.exception.UserRuntimeException;
+import com.paulopsms.exception.ValidationRuntimeException;
 import com.paulopsms.service.UserService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -146,12 +145,12 @@ public class UserControllerTest {
 
     @Test
     public void givenAUserResource_withMissingUserName_thenShouldReturnBadRequestAndCaptureException() throws Exception {
-        when(userService.createUser(Mockito.any(User.class))).thenThrow(new UserRuntimeException("O nome do usuário é obrigatório."));
+        when(userService.createUser(Mockito.any(User.class))).thenThrow(new ValidationRuntimeException("O nome do usuário é obrigatório."));
 
         MockHttpServletResponse response = mockMvc.perform(MockMvcRequestBuilders.post("/users")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(User.builder().name("John Doe").build())))
-                .andExpect(result -> assertInstanceOf(UserRuntimeException.class, result.getResolvedException()))
+                .andExpect(result -> assertInstanceOf(ValidationRuntimeException.class, result.getResolvedException()))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andReturn()

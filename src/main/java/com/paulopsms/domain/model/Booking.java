@@ -2,7 +2,6 @@ package com.paulopsms.domain.model;
 
 import com.paulopsms.domain.cancelation.RefundRule;
 import com.paulopsms.domain.cancelation.RefundRuleFactory;
-import com.paulopsms.exception.BookingRuntimeException;
 import lombok.*;
 
 import java.io.Serializable;
@@ -37,12 +36,12 @@ public class Booking implements Serializable {
         this.numberOfGuests = numberOfGuests;
         this.bookingStatus = BookingStatus.CONFIRMED;
 
-        if (this.numberOfGuests <= 0) throw new BookingRuntimeException("O número de hóspedes deve ser maior que zero.");
+//        if (this.numberOfGuests <= 0) throw new BookingRuntimeException("O número de hóspedes deve ser maior que zero.");
 
-        this.property.validateMaximumNumberOfGuests(this.numberOfGuests);
+//        this.property.validateMaximumNumberOfGuests(this.numberOfGuests);
 
-        if (!this.property.isAvailable(this.dateRange))
-            throw new BookingRuntimeException("A propriedade não está disponível para o período selecionado.");
+//        if (!this.property.isAvailable(this.dateRange))
+//            throw new BookingRuntimeException("A propriedade não está disponível para o período selecionado.");
 
         this.totalPrice = this.property.calculateTotalPrice(this.dateRange);
         this.property.addBooking(this);
@@ -56,12 +55,12 @@ public class Booking implements Serializable {
         this.numberOfGuests = numberOfGuests;
         this.bookingStatus = BookingStatus.CONFIRMED;
 
-        if (this.numberOfGuests <= 0) throw new BookingRuntimeException("O número de hóspedes deve ser maior que zero.");
+//        if (this.numberOfGuests <= 0) throw new BookingRuntimeException("O número de hóspedes deve ser maior que zero.");
 
-        this.property.validateMaximumNumberOfGuests(this.numberOfGuests);
+//        this.property.validateMaximumNumberOfGuests(this.numberOfGuests);
 
-        if (!this.property.isAvailable(this.dateRange))
-            throw new BookingRuntimeException("A propriedade não está disponível para o período selecionado.");
+//        if (!this.property.isAvailable(this.dateRange))
+//            throw new BookingRuntimeException("A propriedade não está disponível para o período selecionado.");
 
         this.totalPrice = this.property.calculateTotalPrice(this.dateRange);
         this.property.addBooking(this);
@@ -76,12 +75,12 @@ public class Booking implements Serializable {
         this.bookingStatus = bookingStatus;
         this.totalPrice = totalPrice;
 
-        if (this.numberOfGuests <= 0) throw new BookingRuntimeException("O número de hóspedes deve ser maior que zero.");
+//        if (this.numberOfGuests <= 0) throw new BookingRuntimeException("O número de hóspedes deve ser maior que zero.");
 
-        this.property.validateMaximumNumberOfGuests(this.numberOfGuests);
+//        this.property.validateMaximumNumberOfGuests(this.numberOfGuests);
 
-        if (!this.property.isAvailable(this.dateRange))
-            throw new BookingRuntimeException("A propriedade não está disponível para o período selecionado.");
+//        if (!this.property.isAvailable(this.dateRange))
+//            throw new BookingRuntimeException("A propriedade não está disponível para o período selecionado.");
 
         this.totalPrice = this.property.calculateTotalPrice(this.dateRange);
         this.property.addBooking(this);

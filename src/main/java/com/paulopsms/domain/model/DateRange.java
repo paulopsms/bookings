@@ -35,14 +35,14 @@ public class DateRange implements Serializable {
         this.startDate = startDate;
         this.endDate = endDate;
 
-        this.validateDates();
+//        this.validateDates();
     }
 
-    private void validateDates() {
-        if (!this.endDate.isAfter(this.startDate)) {
-            throw new DateRangeRuntimeException("A data de término deve ser posterior à data de início.");
-        }
-    }
+//    private void validateDates() {
+//        if (!this.endDate.isAfter(this.startDate)) {
+//            throw new DateRangeRuntimeException("A data de término deve ser posterior à data de início.");
+//        }
+//    }
 
     @JsonIgnore
     public Long getTotalNights() {

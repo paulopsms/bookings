@@ -9,15 +9,18 @@ import com.paulopsms.domain.model.Property;
 import com.paulopsms.domain.model.User;
 import com.paulopsms.dto.CreateBookingDto;
 import com.paulopsms.exception.CancelBookingRuntimeException;
+import com.paulopsms.exception.ValidationRuntimeException;
 import com.paulopsms.mapper.BookingMapper;
 import com.paulopsms.repository.BookingRepository;
-import org.junit.jupiter.api.BeforeAll;
+import com.paulopsms.validation.BookingValidationService;
+import com.paulopsms.validation.DateRangeValidationService;
+import com.paulopsms.validation.PropertyValidationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,35 +29,41 @@ import java.util.Optional;
 import static com.paulopsms.domain.model.BookingStatus.CANCELLED;
 import static com.paulopsms.domain.model.BookingStatus.CONFIRMED;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class BookingServiceTest {
 
-    @InjectMocks
+    @Autowired
     private BookingService bookingService;
 
-    @Mock
+    @MockitoBean
     private BookingRepository mockBookingRepository;
 
-    @Mock
+    @MockitoBean
     private PropertyService mockPropertyService;
 
-    @Mock
+    @MockitoBean
     private UserService mockUserService;
 
-    @Mock
+    @MockitoBean
     private BookingMapper bookingMapper;
+
+    @MockitoBean
+    private BookingValidationService bookingValidationService;
+
+    @MockitoBean
+    private DateRangeValidationService dateRangeValidationService;
+
+    @MockitoBean
+    private PropertyValidationService propertyValidationService;
 
     private static Property property;
     private static PropertyEntity propertyEntity;
     private static User user;
     private static CreateBookingDto bookingDto;
     private static DateRange dateRange;
-    private static DateRange dateRange2;
     private static DateRangeEntity dateRangeEntity;
-    private static DateRangeEntity dateRangeEntity2;
 
     @BeforeEach
     public void create() {
@@ -63,9 +72,7 @@ public class BookingServiceTest {
         propertyEntity = new PropertyEntity(1L, "Casa", null, 4, new BigDecimal("500"));
         bookingDto = new CreateBookingDto(1L, 1L, LocalDate.parse("2025-05-21"), LocalDate.parse("2025-05-30"), 2);
         dateRange = new DateRange(LocalDate.parse("2025-04-21"), LocalDate.parse("2025-04-30"));
-        dateRange2 = new DateRange(LocalDate.parse("2025-05-21"), LocalDate.parse("2025-05-30"));
         dateRangeEntity = DateRangeEntity.builder().id(1L).startDate(LocalDate.parse("2025-04-21")).endDate(LocalDate.parse("2025-04-30")).build();
-        dateRangeEntity2 = DateRangeEntity.builder().id(1L).startDate(LocalDate.parse("2025-05-21")).endDate(LocalDate.parse("2025-05-30")).build();
     }
 
     @Test
@@ -106,7 +113,7 @@ public class BookingServiceTest {
 
     @Test
     public void givenBookingDataWithInvalidUserId_whenCreatingABooking_thenShouldThrowAnException() {
-        Mockito.when(mockPropertyService.findPropertyById(1L)).thenReturn(this.property);
+        Mockito.when(mockPropertyService.findPropertyById(1L)).thenReturn(property);
         Mockito.when(mockUserService.findUserById(1L)).thenReturn(null);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -168,5 +175,90 @@ public class BookingServiceTest {
         String exceptionMessage = exception.getMessage();
 
         assertEquals(expectedMessage, exceptionMessage);
+    }
+
+
+    @Test
+    public void givenValidDateRange_whenValidating_thenShouldPassWithoutException() {
+        DateRange dateRange = new DateRange(LocalDate.parse("2025-05-21"), LocalDate.parse("2025-05-30"));
+
+        assertDoesNotThrow(() -> dateRangeValidationService.validateDateRange(dateRange));
+    }
+
+    @Test
+    public void givenInvalidDateRange_whenStartDateAfterEndDate_thenShouldThrowException() {
+        Mockito.when(mockPropertyService.findPropertyById(1L)).thenReturn(property);
+        Mockito.when(mockUserService.findUserById(1L)).thenReturn(user);
+        Mockito.doThrow(new ValidationRuntimeException("Data de início deve ser anterior à data de fim."))
+                .when(dateRangeValidationService).validateDateRange(Mockito.any(DateRange.class));
+
+
+        RuntimeException exception = assertThrows(ValidationRuntimeException.class, () -> {
+            bookingService.createBooking(bookingDto);
+        });
+
+        assertInstanceOf(ValidationRuntimeException.class, exception);
+        assertEquals("Data de início deve ser anterior à data de fim.", exception.getMessage());
+        verify(mockPropertyService, times(1)).findPropertyById(Mockito.anyLong());
+        verify(mockUserService, times(1)).findUserById(Mockito.anyLong());
+        verify(dateRangeValidationService, times(1)).validateDateRange(Mockito.any(DateRange.class));
+        verifyNoInteractions(propertyValidationService, bookingValidationService, bookingMapper, mockBookingRepository);
+    }
+
+    @Test
+    public void givenProperty_whenNotAvailable_thenShouldThrowException() {
+        Mockito.when(mockPropertyService.findPropertyById(1L)).thenReturn(property);
+        Mockito.when(mockUserService.findUserById(1L)).thenReturn(user);
+        Mockito.doNothing().when(dateRangeValidationService).validateDateRange(Mockito.any(DateRange.class));
+        Mockito.doThrow(new ValidationRuntimeException("A propriedade não está disponível para o período selecionado."))
+                .when(propertyValidationService).validatePropertyAvailability(Mockito.any(Property.class), Mockito.any(DateRange.class));;
+
+        RuntimeException exception = assertThrows(ValidationRuntimeException.class, () -> {
+            bookingService.createBooking(bookingDto);
+        });
+
+        assertInstanceOf(ValidationRuntimeException.class, exception);
+        assertEquals("A propriedade não está disponível para o período selecionado.", exception.getMessage());
+        verify(mockPropertyService, times(1)).findPropertyById(Mockito.anyLong());
+        verify(mockUserService, times(1)).findUserById(Mockito.anyLong());
+        verify(dateRangeValidationService, times(1)).validateDateRange(Mockito.any(DateRange.class));
+        verify(propertyValidationService, times(1)).validatePropertyAvailability(Mockito.any(Property.class), Mockito.any(DateRange.class));
+        verifyNoInteractions(bookingValidationService, bookingMapper, mockBookingRepository);
+    }
+
+    @Test
+    public void givenValidBooking_whenValidated_thenShouldPassWithoutException() {
+        CreateBookingDto createBookingDto = new CreateBookingDto(1L, 1L, LocalDate.now(), LocalDate.now().plusDays(9), 4);
+        BookingEntity bookingEntity = BookingEntity.builder().id(1L).property(propertyEntity).bookingStatus(CONFIRMED).dateRange(dateRangeEntity).numberOfGuests(4).totalPrice(new BigDecimal("4050.0")).build();
+
+        Mockito.when(mockPropertyService.findPropertyById(1L)).thenReturn(property);
+        Mockito.when(mockUserService.findUserById(1L)).thenReturn(user);
+        Mockito.doNothing().when(dateRangeValidationService).validateDateRange(Mockito.any(DateRange.class));
+        Mockito.doNothing().when(propertyValidationService).validatePropertyAvailability(Mockito.any(Property.class), Mockito.any(DateRange.class));
+        Mockito.doNothing().when(bookingValidationService).validateBooking(Mockito.any(Booking.class));
+        Mockito.when(bookingMapper.toEntity(Mockito.any(Booking.class))).thenReturn(bookingEntity);
+
+        Booking createdBooking = bookingService.createBooking(createBookingDto);
+
+        assertNotNull(createdBooking);
+        assertEquals(new BigDecimal("4050.0"), createdBooking.getTotalPrice());
+        assertEquals(CONFIRMED, createdBooking.getBookingStatus());
+        assertEquals(1L, createdBooking.getId());
+        assertEquals(bookingEntity.getNumberOfGuests(), createdBooking.getNumberOfGuests());
+        assertEquals("Casa", createdBooking.getProperty().getName());
+        assertEquals(new BigDecimal("500"), createdBooking.getProperty().getBasePricePerNight());
+        assertEquals(LocalDate.now(), createdBooking.getDateRange().getStartDate());
+        assertEquals(LocalDate.now().plusDays(9), createdBooking.getDateRange().getEndDate());
+        assertEquals(propertyEntity.getId(), createdBooking.getProperty().getId());
+        assertEquals(propertyEntity.getName(), createdBooking.getProperty().getName());
+        assertEquals(propertyEntity.getNumberOfGuests(), createdBooking.getProperty().getNumberOfGuests());
+        assertEquals(propertyEntity.getBasePricePerNight(), createdBooking.getProperty().getBasePricePerNight());
+        verify(mockPropertyService, times(1)).findPropertyById(Mockito.anyLong());
+        verify(mockUserService, times(1)).findUserById(Mockito.anyLong());
+        verify(dateRangeValidationService, times(1)).validateDateRange(Mockito.any(DateRange.class));
+        verify(propertyValidationService, times(1)).validatePropertyAvailability(Mockito.any(Property.class), Mockito.any(DateRange.class));
+        verify(bookingValidationService, times(1)).validateBooking(Mockito.any(Booking.class));
+        verify(bookingMapper, times(1)).toEntity(Mockito.any(Booking.class));
+        verify(mockBookingRepository, times(1)).save(Mockito.any(BookingEntity.class));
     }
 }

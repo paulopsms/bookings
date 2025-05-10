@@ -40,9 +40,9 @@ public class Property implements Serializable {
         this.numberOfGuests = numberOfGuests;
         this.basePricePerNight = basePricePerNight;
 
-        this.validatePropertyName();
-        this.validatePositiveNumberOfGuests();
-        this.validaBasePricePerNight();
+//        this.validatePropertyName();
+//        this.validatePositiveNumberOfGuests();
+//        this.validaBasePricePerNight();
     }
 
     public Property(Long id, String name, String description, Integer numberOfGuests, BigDecimal basePricePerNight, List<Booking> bookings) {
@@ -53,22 +53,22 @@ public class Property implements Serializable {
         this.basePricePerNight = basePricePerNight;
         this.bookings = bookings;
 
-        this.validatePropertyName();
-        this.validatePositiveNumberOfGuests();
-        this.validaBasePricePerNight();
+//        this.validatePropertyName();
+//        this.validatePositiveNumberOfGuests();
+//        this.validaBasePricePerNight();
     }
 
-    private void validaBasePricePerNight() {
-        if (isNull(this.basePricePerNight)) throw new PropertyRuntimeException("O Preço base por noite é obrigatório.");
-    }
-
-    private void validatePositiveNumberOfGuests() {
-        if (this.numberOfGuests <= 0) throw new PropertyRuntimeException("O número de hóspedes deve ser maior que zero.");
-    }
-
-    public void validatePropertyName() {
-        if (nonNull(this.name) && this.name.isBlank()) throw new PropertyRuntimeException("O nome da propriedade é obrigatório.");
-    }
+//    private void validaBasePricePerNight() {
+//        if (isNull(this.basePricePerNight)) throw new PropertyRuntimeException("O Preço base por noite é obrigatório.");
+//    }
+//
+//    private void validatePositiveNumberOfGuests() {
+//        if (this.numberOfGuests <= 0) throw new PropertyRuntimeException("O número de hóspedes deve ser maior que zero.");
+//    }
+//
+//    public void validatePropertyName() {
+//        if (nonNull(this.name) && this.name.isBlank()) throw new PropertyRuntimeException("O nome da propriedade é obrigatório.");
+//    }
 
     public void validateMaximumNumberOfGuests(int numberOfGuests) {
         if (numberOfGuests > this.numberOfGuests)

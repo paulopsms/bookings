@@ -8,6 +8,7 @@ import com.paulopsms.mapper.BookingMapper;
 import com.paulopsms.mapper.PropertyMapper;
 import com.paulopsms.repository.BookingRepository;
 import com.paulopsms.repository.PropertyRepository;
+import com.paulopsms.validation.PropertyValidationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class PropertyService {
     @Autowired
     private BookingMapper bookingMapper;
 
+    @Autowired
+    private PropertyValidationService propertyValidationService;
+
     public Property findPropertyById(Long propertyId) {
         PropertyEntity propertyEntity = this.propertyRepository.findById(propertyId).orElse(null);
 
@@ -52,6 +56,10 @@ public class PropertyService {
     }
 
     public Property saveProperty(Property property) {
+        this.propertyValidationService.validateProperty(property);
+
+        log.info("Saving Property: {}", property);
+
         PropertyEntity entity = this.propertyMapper.toEntity(property);
 
         this.propertyRepository.save(entity);

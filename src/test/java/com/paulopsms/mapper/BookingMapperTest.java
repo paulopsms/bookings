@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 import static com.paulopsms.domain.model.BookingStatus.CONFIRMED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class BookingMapperTest {
@@ -27,7 +26,6 @@ public class BookingMapperTest {
 
     private static Booking booking;
     private static BookingEntity bookingEntity;
-    private static BookingEntity bookingEntityException;
 
     @BeforeAll
     public static void init() {
@@ -64,16 +62,6 @@ public class BookingMapperTest {
                 .bookingStatus(CONFIRMED)
                 .totalPrice(new BigDecimal("1000.00"))
                 .build();
-        bookingEntityException = BookingEntity.builder().id(1L)
-                .property(PropertyEntity.builder()
-                        .id(100L)
-                        .name("Beach House")
-                        .description("A beautiful beach house.")
-                        .numberOfGuests(2)
-                        .basePricePerNight(new BigDecimal("250.00"))
-                        .build())
-                .numberOfGuests(3)
-                .build();
     }
 
     @Test
@@ -94,17 +82,5 @@ public class BookingMapperTest {
         assertEquals(bookingEntity.getNumberOfGuests(), bookingModel.getNumberOfGuests());
         assertEquals(CONFIRMED, bookingModel.getBookingStatus());
         assertEquals(bookingEntity.getTotalPrice(), bookingModel.getTotalPrice());
-    }
-
-    @Test
-    public void givenAnEmptyBookingModelName_whenConvertToBookingEntity_thenShouldThrowAnException() {
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            bookingMapper.toModel(bookingEntityException);
-        });
-
-        String expectedMessage = "O número máximo de hóspedes permitidos são " + bookingEntityException.getProperty().getNumberOfGuests() + ".";
-        String message = exception.getMessage();
-
-        assertEquals(expectedMessage, message);
     }
 }

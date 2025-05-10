@@ -23,20 +23,6 @@ public class DateRangeTest {
     }
 
     @Test
-    public void givenDataTerminoBeforeDataInicio_whenExceptionThrown_thenAssertionSucceeds() {
-
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            new DateRange(LocalDate.parse("2025-04-20"), LocalDate.parse("2025-04-13"));
-        });
-
-        String expectedMessage = "A data de término deve ser posterior à data de início.";
-        String message = exception.getMessage();
-
-        assertEquals(expectedMessage, message);
-    }
-
-    @Test
     public void givenDataRange_whenCalculatingDaysBetween_thenAssertsSucceeds() {
         final LocalDate startDate = LocalDate.parse("2025-04-13");
         final LocalDate endDate = LocalDate.parse("2025-04-20");
@@ -75,20 +61,5 @@ public class DateRangeTest {
         assertTrue(overlaps3);
         assertFalse(overlaps4);
         assertTrue(overlaps5);
-    }
-
-    @Test
-    public void givenDateRange_whenStartDateEqualsToEndDate_thenThrowAnException() {
-        final LocalDate startDate = LocalDate.parse("2025-04-20");
-        final LocalDate endDate = LocalDate.parse("2025-04-20");
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            new DateRange(startDate, endDate);
-        });
-
-        String expectedMessage = "A data de término deve ser posterior à data de início.";
-        String message = exception.getMessage();
-
-        assertEquals(expectedMessage, message);
     }
 }
