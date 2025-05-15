@@ -12,7 +12,7 @@ RUN mvn dependency:go-offline --no-transfer-progress
 COPY src ./src
 
 # Compilar o projeto e criar o arquivo JAR (sem executar os testes para acelerar o build)
-RUN mvn clean package -DskipTests --no-transfer-progress
+RUN mvn clean package --no-transfer-progress
 
 
 # Runtime stage - executar a aplicação

@@ -17,10 +17,10 @@ import com.paulopsms.validation.DateRangeValidationService;
 import com.paulopsms.validation.PropertyValidationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -34,28 +34,28 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 public class BookingServiceTest {
 
-    @Autowired
+    @InjectMocks
     private BookingService bookingService;
 
-    @MockitoBean
+    @Mock
     private BookingRepository mockBookingRepository;
 
-    @MockitoBean
+    @Mock
     private PropertyService mockPropertyService;
 
-    @MockitoBean
+    @Mock
     private UserService mockUserService;
 
-    @MockitoBean
+    @Mock
     private BookingMapper bookingMapper;
 
-    @MockitoBean
+    @Mock
     private BookingValidationService bookingValidationService;
 
-    @MockitoBean
+    @Mock
     private DateRangeValidationService dateRangeValidationService;
 
-    @MockitoBean
+    @Mock
     private PropertyValidationService propertyValidationService;
 
     private static Property property;
@@ -211,7 +211,8 @@ public class BookingServiceTest {
         Mockito.when(mockUserService.findUserById(1L)).thenReturn(user);
         Mockito.doNothing().when(dateRangeValidationService).validateDateRange(Mockito.any(DateRange.class));
         Mockito.doThrow(new ValidationRuntimeException("A propriedade não está disponível para o período selecionado."))
-                .when(propertyValidationService).validatePropertyAvailability(Mockito.any(Property.class), Mockito.any(DateRange.class));;
+                .when(propertyValidationService).validatePropertyAvailability(Mockito.any(Property.class), Mockito.any(DateRange.class));
+        ;
 
         RuntimeException exception = assertThrows(ValidationRuntimeException.class, () -> {
             bookingService.createBooking(bookingDto);
