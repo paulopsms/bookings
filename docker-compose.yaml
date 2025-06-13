@@ -21,7 +21,7 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - springapipostgres-net
+      - backend-application-net
 
   db:
     image: postgres:17.4-alpine
@@ -43,10 +43,12 @@ services:
       timeout: 5s
       retries: 5
       start_interval: 5s
+      start_period: 5s
     ports:
       - "5432:5432"
     networks:
-      - springapipostgres-net
+      - database-net
+      - backend-application-net
 
   flyway:
     image: flyway/flyway:11.8.0-alpine
@@ -57,7 +59,7 @@ services:
       db:
         condition: service_healthy
     networks:
-      - springapipostgres-net
+      - database-net
 
   pg_admin:
     image: dpage/pgadmin4:latest
@@ -73,11 +75,13 @@ services:
         condition: service_healthy
 
     networks:
-      - springapipostgres-net
+      - database-net
 
 volumes:
   pgdata:
 
 networks:
-  springapipostgres-net:
+  database-net:
     driver: bridge
+  backend-application-net:
+      driver: bridge
